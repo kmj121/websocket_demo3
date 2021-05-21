@@ -39,12 +39,10 @@ public class WebSocketServer {
         if(webSocketMap.containsKey(userId)){
             webSocketMap.remove(userId);
             webSocketMap.put(userId,this);
-            //加入set中
         }else{
             webSocketMap.put(userId,this);
-            //加入set中
-            addOnlineCount();
             //在线数加1
+            addOnlineCount();
         }
 
         log.info("用户连接:"+userId+",当前在线人数为:" + getOnlineCount());
@@ -63,7 +61,6 @@ public class WebSocketServer {
     public void onClose() {
         if(webSocketMap.containsKey(userId)){
             webSocketMap.remove(userId);
-            //从set中删除
             subOnlineCount();
         }
         log.info("用户退出:"+userId+",当前在线人数为:" + getOnlineCount());
@@ -72,7 +69,8 @@ public class WebSocketServer {
     /**
      * 收到客户端消息后调用的方法
      *
-     * @param message 客户端发送过来的消息*/
+     * @param message 客户端发送过来的消息
+     */
     @OnMessage
     public void onMessage(String message, Session session) {
         log.info("用户消息:"+userId+",报文:"+message);
@@ -137,10 +135,10 @@ public class WebSocketServer {
 //        }
         if (webSocketMap.size() > 0) {
             for (String s : webSocketMap.keySet()) {
-                if (s.equals("10")) {
+                if (webSocketMap.containsKey("10") && s.equals("10")) {
                     webSocketMap.get("10").sendMessage("hello 10");
                 }
-                if (s.equals("20")) {
+                if (webSocketMap.containsKey("20") && s.equals("20")) {
                     webSocketMap.get("20").sendMessage("hello 20");
                 }
             }
