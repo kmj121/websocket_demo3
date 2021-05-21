@@ -3,6 +3,7 @@ package com.bc.websocket_demo.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -66,8 +67,19 @@ public class WebSocketServer {
     @OnClose
     public void onClose() {
         if(webSocketMap.containsKey(userId)){
-            webSocketMap.remove(userId);
-            subOnlineCount();
+            List<WebSocketServer> list = webSocketMap.get(userId);
+            List<WebSocketServer> result = new ArrayList<>();
+            for (WebSocketServer item : list) {
+                if (item != this) {
+                    result.add(item);
+                }
+            }
+            if (result.size() == 0) {
+                webSocketMap.remove(userId);
+                subOnlineCount();
+            } else {
+                webSocketMap.put(userId, result);
+            }
         }
         log.info("用户退出:"+userId+",当前在线人数为:" + getOnlineCount());
     }
@@ -168,5 +180,22 @@ public class WebSocketServer {
 
     public static synchronized void subOnlineCount() {
         WebSocketServer.onlineCount--;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        WebSocketServer that = (WebSocketServer) o;
+        return Objects.equals(session, that.session) && Objects.equals(userId, that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(session, userId);
     }
 }
