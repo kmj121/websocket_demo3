@@ -31,5 +31,11 @@ public class DemoController {
         WebSocketServer.sendInfo(message,toUserId);
         return ResponseEntity.ok("MSG SEND SUCCESS");
     }
+
+    @RequestMapping("/sendEveryOneInfo")
+    public ResponseEntity<String> sendEveryOneInfo() throws IOException {
+        WebSocketServer.sendEveryOneInfo();
+        return ResponseEntity.ok("MSG SEND SUCCESS");
+    }
 }
 

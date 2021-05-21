@@ -128,6 +128,25 @@ public class WebSocketServer {
         }
     }
 
+    public static void sendEveryOneInfo() throws IOException {
+        log.info("发送不同消息给每一个人");
+//        if(StringUtils.isNotBlank(userId)&&webSocketMap.containsKey(userId)){
+//            webSocketMap.get(userId).sendMessage(message);
+//        }else{
+//            log.error("用户"+userId+",不在线！");
+//        }
+        if (webSocketMap.size() > 0) {
+            for (String s : webSocketMap.keySet()) {
+                if (s.equals("10")) {
+                    webSocketMap.get("10").sendMessage("hello 10");
+                }
+                if (s.equals("20")) {
+                    webSocketMap.get("20").sendMessage("hello 20");
+                }
+            }
+        }
+    }
+
     public static synchronized int getOnlineCount() {
         return onlineCount;
     }
