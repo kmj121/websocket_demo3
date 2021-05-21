@@ -1,6 +1,8 @@
 package com.bc.websocket_demo.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -24,7 +26,7 @@ public class WebSocketServer {
     /**静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。*/
     private static int onlineCount = 0;
     /**concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。*/
-    private static ConcurrentHashMap<String,WebSocketServer> webSocketMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, List<WebSocketServer>> webSocketMap = new ConcurrentHashMap<>();
     /**与某个客户端的连接会话，需要通过它来给客户端发送数据*/
     private Session session;
     /**接收userId*/
@@ -36,11 +38,15 @@ public class WebSocketServer {
     public void onOpen(Session session,@PathParam("userId") String userId) {
         this.session = session;
         this.userId=userId;
+        List<WebSocketServer> list = new ArrayList<>();
         if(webSocketMap.containsKey(userId)){
-            webSocketMap.remove(userId);
-            webSocketMap.put(userId,this);
+//            webSocketMap.remove(userId);
+            list = webSocketMap.get(userId);
+            list.add(this);
+            webSocketMap.put(userId,list);
         }else{
-            webSocketMap.put(userId,this);
+            list.add(this);
+            webSocketMap.put(userId,list);
             //在线数加1
             addOnlineCount();
         }
@@ -85,7 +91,10 @@ public class WebSocketServer {
                 String toUserId=jsonObject.getString("toUserId");
                 //传送给对应toUserId用户的websocket
                 if(StringUtils.isNotBlank(toUserId)&&webSocketMap.containsKey(toUserId)){
-                    webSocketMap.get(toUserId).sendMessage(jsonObject.toJSONString());
+                    List<WebSocketServer> list = webSocketMap.get(toUserId);
+                    for (WebSocketServer item : list) {
+                        item.sendMessage(jsonObject.toJSONString());
+                    }
                 }else{
                     log.error("请求的userId:"+toUserId+"不在该服务器上");
                     //否则不在这个服务器上，发送到mysql或者redis
@@ -120,7 +129,10 @@ public class WebSocketServer {
     public static void sendInfo(String message,@PathParam("userId") String userId) throws IOException {
         log.info("发送消息到:"+userId+"，报文:"+message);
         if(StringUtils.isNotBlank(userId)&&webSocketMap.containsKey(userId)){
-            webSocketMap.get(userId).sendMessage(message);
+            List<WebSocketServer> list = webSocketMap.get(userId);
+            for (WebSocketServer item : list) {
+                item.sendMessage(message);
+            }
         }else{
             log.error("用户"+userId+",不在线！");
         }
@@ -131,10 +143,16 @@ public class WebSocketServer {
         if (webSocketMap.size() > 0) {
             for (String s : webSocketMap.keySet()) {
                 if (webSocketMap.containsKey("10") && s.equals("10")) {
-                    webSocketMap.get("10").sendMessage("hello 10");
+                    List<WebSocketServer> list = webSocketMap.get("10");
+                    for (WebSocketServer item : list) {
+                        item.sendMessage("hello 10");
+                    }
                 }
                 if (webSocketMap.containsKey("20") && s.equals("20")) {
-                    webSocketMap.get("20").sendMessage("hello 20");
+                    List<WebSocketServer> list = webSocketMap.get("20");
+                    for (WebSocketServer item : list) {
+                        item.sendMessage("hello 20");
+                    }
                 }
             }
         }
