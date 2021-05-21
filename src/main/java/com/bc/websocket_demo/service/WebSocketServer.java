@@ -128,11 +128,6 @@ public class WebSocketServer {
 
     public static void sendEveryOneInfo() throws IOException {
         log.info("发送不同消息给每一个人");
-//        if(StringUtils.isNotBlank(userId)&&webSocketMap.containsKey(userId)){
-//            webSocketMap.get(userId).sendMessage(message);
-//        }else{
-//            log.error("用户"+userId+",不在线！");
-//        }
         if (webSocketMap.size() > 0) {
             for (String s : webSocketMap.keySet()) {
                 if (webSocketMap.containsKey("10") && s.equals("10")) {
